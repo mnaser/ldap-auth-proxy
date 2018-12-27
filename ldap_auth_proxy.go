@@ -132,6 +132,7 @@ func (p *LDAPAuthProxy) Proxy(w http.ResponseWriter, r *http.Request) {
 	status := p.Authenticate(w, r)
 
 	if status != http.StatusAccepted {
+		w.Header().Set("WWW-Authenticate", "Basic realm=\"Authorization required\"")
 		http.Error(w, http.StatusText(status), status)
 		return
 	}
@@ -141,8 +142,6 @@ func (p *LDAPAuthProxy) Proxy(w http.ResponseWriter, r *http.Request) {
 
 // Authenticate - authenticate user from request
 func (p *LDAPAuthProxy) Authenticate(w http.ResponseWriter, r *http.Request) int {
-	w.Header().Set("WWW-Authenticate", fmt.Sprintf(`Basic realm="%s"`, "Authorization required"))
-
 	s := strings.SplitN(r.Header.Get("Authorization"), " ", 2)
 	if len(s) != 2 {
 		traceDebug(w, "Malformed auth header value")
